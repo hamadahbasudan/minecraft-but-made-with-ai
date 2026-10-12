@@ -7,26 +7,32 @@ HEIGHT = 540
 BLOCK = 32
 
 COLORS = {
-    "sky": "#9ad7ff",
-    "grass": "#5fbf5f",
-    "dirt": "#8b5a2b",
-    "stone": "#8a8d8f",
-    "wood": "#8b5a2b",
-    "leaf": "#3c9f4a",
-    "sun": "#ffd166",
-    "cloud": "#f5f7ff",
-    "player": "#ffca3a",
-    "outline": "#333333",
+    "sky": "#7ec0ee",
+    "grass": "#5fa144",
+    "dirt": "#8f5f32",
+    "stone": "#7d7d7d",
+    "wood": "#8b5c2d",
+    "leaf": "#4fae4d",
+    "sun": "#f9d66a",
+    "cloud": "#f4f8ff",
+    "player": "#eab86a",
+    "outline": "#1f1f1f",
     "ui": "#1b1b1b",
-    "ui_alt": "#2f2f2f",
-    "selected": "#ffd166",
+    "ui_alt": "#2e2e2e",
+    "selected": "#f1c45b",
+    "grass_top": "#88d96c",
+    "grass_shadow": "#3f7d2f",
+    "stone_dark": "#646464",
+    "wood_dark": "#6a3f1b",
+    "leaf_dark": "#3a8b3e",
 }
 
 
 class MiniMinecraft:
     def __init__(self, root):
         self.root = root
-        self.root.title("Mini Minecraft")
+        self.root.title("Minecraft")
+        self.root.configure(bg=COLORS["sky"])
         self.canvas = tk.Canvas(root, width=WIDTH, height=HEIGHT, bg=COLORS["sky"], highlightthickness=0)
         self.canvas.pack()
 
@@ -92,7 +98,6 @@ class MiniMinecraft:
 
     def generate_world(self):
         for x in range(0, 220):
-            # smooth terrain
             surface = 10 + int(3 * math.sin(x / 6.0) + 2 * math.sin(x / 2.6 + 1.5))
             surface = max(10, min(18, surface))
 
@@ -192,7 +197,6 @@ class MiniMinecraft:
         if self.inventory.get(self.selected, 0) <= 0:
             return
 
-        # don't allow placing block in player body
         px = self.player["x"]
         py = self.player["y"]
         if not (
@@ -222,7 +226,6 @@ class MiniMinecraft:
         self.player["y"] += self.player["vy"]
         self.resolve_vertical()
 
-        # clamp to world edges
         if self.player["x"] < 0:
             self.player["x"] = 0
         if self.player["x"] > 220 * BLOCK - self.player["w"]:
@@ -245,13 +248,30 @@ class MiniMinecraft:
         x2 = x1 + BLOCK
         y2 = y1 + BLOCK
 
-        fill = COLORS[block]
-        self.canvas.create_rectangle(x1, y1, x2, y2, fill=fill, outline=COLORS["outline"], width=1)
-
         if block == "grass":
-            self.canvas.create_rectangle(x1, y1, x2, y1 + 8, fill="#7bdc5a", outline="")
+            self.canvas.create_rectangle(x1, y1, x2, y2, fill=COLORS["grass"], outline=COLORS["outline"], width=1)
+            self.canvas.create_rectangle(x1, y1, x2, y1 + 8, fill=COLORS["grass_top"], outline="")
+            self.canvas.create_rectangle(x1, y1 + 8, x2, y2, fill=COLORS["grass_shadow"], outline="")
+        elif block == "dirt":
+            self.canvas.create_rectangle(x1, y1, x2, y2, fill=COLORS["dirt"], outline=COLORS["outline"], width=1)
+            self.canvas.create_rectangle(x1, y1, x2, y1 + 6, fill="#9d6a3b", outline="")
+            for i in range(0, BLOCK, 8):
+                self.canvas.create_line(x1 + i, y1 + 6, x1 + i, y2, fill="#7a4d28", width=1)
+        elif block == "stone":
+            self.canvas.create_rectangle(x1, y1, x2, y2, fill=COLORS["stone"], outline=COLORS["outline"], width=1)
+            for i in range(0, BLOCK, 8):
+                self.canvas.create_line(x1 + i, y1, x1 + i, y2, fill=COLORS["stone_dark"], width=1)
+            for i in range(0, BLOCK, 8):
+                self.canvas.create_line(x1, y1 + i, x2, y1 + i, fill="#8a8a8a", width=1)
+        elif block == "wood":
+            self.canvas.create_rectangle(x1, y1, x2, y2, fill=COLORS["wood"], outline=COLORS["outline"], width=1)
+            self.canvas.create_rectangle(x1 + 4, y1, x1 + 10, y2, fill=COLORS["wood_dark"], outline="")
+            self.canvas.create_rectangle(x1 + 18, y1, x1 + 24, y2, fill=COLORS["wood_dark"], outline="")
         elif block == "leaf":
-            self.canvas.create_rectangle(x1 + 6, y1 + 6, x2 - 6, y2 - 6, fill="#53c66b", outline="")
+            self.canvas.create_rectangle(x1, y1, x2, y2, fill=COLORS["leaf"], outline=COLORS["outline"], width=1)
+            self.canvas.create_rectangle(x1 + 6, y1 + 6, x2 - 6, y2 - 6, fill=COLORS["leaf_dark"], outline="")
+        else:
+            self.canvas.create_rectangle(x1, y1, x2, y2, fill=COLORS[block], outline=COLORS["outline"], width=1)
 
     def draw(self):
         self.canvas.delete("all")
@@ -259,7 +279,24 @@ class MiniMinecraft:
         self.canvas.create_rectangle(0, 0, WIDTH, HEIGHT, fill=COLORS["sky"], outline="")
         self.canvas.create_oval(WIDTH - 120, 40, WIDTH - 30, 130, fill=COLORS["sun"], outline="")
 
-        # clouds
+        self.canvas.create_rectangle(0, HEIGHT - 120, WIDTH, HEIGHT, fill="#7dbd57", outline="")
+        self.canvas.create_polygon(
+            0, HEIGHT - 110,
+            110, HEIGHT - 180,
+            210, HEIGHT - 150,
+            340, HEIGHT - 200,
+            470, HEIGHT - 140,
+            620, HEIGHT - 210,
+            760, HEIGHT - 170,
+            900, HEIGHT - 220,
+            WIDTH, HEIGHT - 130,
+            WIDTH, HEIGHT,
+            0, HEIGHT,
+            fill="#7d8b8b",
+            outline="#5c6d6d",
+            width=2,
+        )
+
         for cx, cy in [(120, 80), (500, 110), (730, 70)]:
             self.canvas.create_oval(cx, cy, cx + 40, cy + 30, fill=COLORS["cloud"], outline="")
             self.canvas.create_oval(cx + 25, cy - 10, cx + 65, cy + 20, fill=COLORS["cloud"], outline="")
@@ -270,27 +307,35 @@ class MiniMinecraft:
                 continue
             self.draw_block(tx, ty, block)
 
-        # draw player
         px = self.player["x"] - self.camera_x
         py = self.player["y"]
         self.canvas.create_rectangle(px, py, px + self.player["w"], py + self.player["h"], fill=COLORS["player"], outline=COLORS["outline"], width=2)
-        self.canvas.create_oval(px + 8, py + 8, px + 18, py + 18, fill="#1a1a1a", outline="")
-        self.canvas.create_oval(px + 18, py + 8, px + 28, py + 18, fill="#1a1a1a", outline="")
+        self.canvas.create_oval(px + 8, py + 8, px + 18, py + 18, fill="#161616", outline="")
+        self.canvas.create_oval(px + 18, py + 8, px + 28, py + 18, fill="#161616", outline="")
 
-        # HUD/inventory
-        self.canvas.create_rectangle(18, HEIGHT - 60, WIDTH - 18, HEIGHT - 18, fill=COLORS["ui"], outline="", width=0)
+        hud_y = HEIGHT - 62
+        self.canvas.create_rectangle(18, hud_y, WIDTH - 18, HEIGHT - 18, fill=COLORS["ui"], outline=COLORS["outline"], width=2)
+        self.canvas.create_rectangle(28, hud_y + 8, WIDTH - 28, HEIGHT - 28, fill=COLORS["ui_alt"], outline="")
+
         slots = ["grass", "dirt", "stone", "wood", "leaf"]
         for i, name in enumerate(slots):
-            x1 = 28 + i * 110
+            x1 = 36 + i * 110
             x2 = x1 + 90
-            y1 = HEIGHT - 50
-            y2 = HEIGHT - 24
+            y1 = HEIGHT - 52
+            y2 = HEIGHT - 26
             fill = COLORS["selected"] if name == self.selected else COLORS["ui_alt"]
             self.canvas.create_rectangle(x1, y1, x2, y2, fill=fill, outline=COLORS["outline"], width=2)
             self.canvas.create_text(x1 + 45, y1 + 13, text=name.title(), fill="white", font=("Arial", 10, "bold"))
             self.canvas.create_text(x1 + 45, y1 + 24, text=f"x{self.inventory.get(name, 0)}", fill="#dfe6ff", font=("Arial", 9, "bold"))
 
-        self.canvas.create_text(20, 20, text="A/D or arrows to move, W/Space to jump, E to cycle block, click to break, right-click to place", anchor="nw", fill="black", font=("Arial", 10, "bold"))
+        self.canvas.create_text(
+            32,
+            20,
+            text="A/D or arrows to move • W/Space to jump • E to cycle • click to mine • right-click to build",
+            anchor="nw",
+            fill="#f7f7f7",
+            font=("Courier New", 10, "bold"),
+        )
 
 
 root = tk.Tk()
