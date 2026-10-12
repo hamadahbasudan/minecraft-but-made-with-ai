@@ -7,35 +7,37 @@ HEIGHT = 540
 BLOCK = 32
 
 COLORS = {
-    "sky": "#7ea8ff",
-    "grass": "#5e9c3a",
-    "grass_top": "#7ecb5b",
-    "grass_side": "#6f8f37",
-    "dirt": "#8b5a2b",
-    "dirt_side": "#7c4726",
-    "stone": "#808080",
-    "stone_side": "#707070",
-    "stone_dark": "#585858",
-    "wood": "#8b5a2b",
-    "wood_side": "#73431d",
-    "leaf": "#4e9b3a",
-    "leaf_dark": "#3d7d2d",
-    "sun": "#f7d26c",
-    "cloud": "#f5f7ff",
-    "player": "#dca75a",
-    "outline": "#202020",
-    "ui": "#1d1d1d",
-    "ui_alt": "#2c2c2c",
-    "selected": "#f0c14d",
-    "hud_text": "#f2f2f2",
-    "shadow": "#1d1d1d",
+    "sky": "#8ecbff",
+    "grass": "#5fa144",
+    "grass_top": "#79cf62",
+    "grass_side": "#4f8637",
+    "dirt": "#8d5a2b",
+    "dirt_top": "#9a6235",
+    "dirt_side": "#73451f",
+    "stone": "#7d7d7d",
+    "stone_top": "#939393",
+    "stone_side": "#686868",
+    "wood": "#8a5728",
+    "wood_top": "#a8773d",
+    "wood_side": "#69411c",
+    "leaf": "#4fae49",
+    "leaf_top": "#66c652",
+    "leaf_side": "#37833a",
+    "sun": "#f5d46a",
+    "cloud": "#f5f9ff",
+    "player": "#ddaa5f",
+    "outline": "#1b1b1b",
+    "ui": "#171717",
+    "ui_alt": "#2a2a2a",
+    "selected": "#f4c75c",
+    "hud_text": "#f3f3f3",
 }
 
 
 class MiniMinecraft:
     def __init__(self, root):
         self.root = root
-        self.root.title("Minecraft")
+        self.root.title("Minecraft 3D")
         self.root.configure(bg=COLORS["sky"])
         self.canvas = tk.Canvas(root, width=WIDTH, height=HEIGHT, bg=COLORS["sky"], highlightthickness=0)
         self.canvas.pack()
@@ -251,32 +253,44 @@ class MiniMinecraft:
         y1 = ty * BLOCK
         x2 = x1 + BLOCK
         y2 = y1 + BLOCK
+        depth = 7
 
-        if block == "grass":
-            self.canvas.create_rectangle(x1, y1, x2, y2, fill=COLORS["grass"], outline=COLORS["outline"], width=1)
-            self.canvas.create_rectangle(x1, y1, x2, y1 + 8, fill=COLORS["grass_top"], outline="")
-            self.canvas.create_line(x1, y1 + 7, x2, y1 + 7, fill=COLORS["grass_side"], width=1)
-            self.canvas.create_line(x1, y1 + 2, x2, y1 + 2, fill="#90d55b", width=1)
-        elif block == "dirt":
-            self.canvas.create_rectangle(x1, y1, x2, y2, fill=COLORS["dirt"], outline=COLORS["outline"], width=1)
-            self.canvas.create_rectangle(x1, y1, x2, y1 + 7, fill="#9a6235", outline="")
-            for i in range(0, BLOCK, 6):
-                self.canvas.create_line(x1 + i, y1 + 6, x1 + i, y2, fill=COLORS["dirt_side"], width=1)
-        elif block == "stone":
-            self.canvas.create_rectangle(x1, y1, x2, y2, fill=COLORS["stone"], outline=COLORS["outline"], width=1)
-            for i in range(0, BLOCK, 8):
-                self.canvas.create_line(x1 + i, y1, x1 + i, y2, fill=COLORS["stone_dark"], width=1)
-            for i in range(0, BLOCK, 8):
-                self.canvas.create_line(x1, y1 + i, x2, y1 + i, fill=COLORS["stone_side"], width=1)
-        elif block == "wood":
-            self.canvas.create_rectangle(x1, y1, x2, y2, fill=COLORS["wood"], outline=COLORS["outline"], width=1)
-            self.canvas.create_rectangle(x1 + 4, y1, x1 + 10, y2, fill=COLORS["wood_side"], outline="")
-            self.canvas.create_rectangle(x1 + 18, y1, x1 + 24, y2, fill=COLORS["wood_side"], outline="")
-        elif block == "leaf":
-            self.canvas.create_rectangle(x1, y1, x2, y2, fill=COLORS["leaf"], outline=COLORS["outline"], width=1)
-            self.canvas.create_rectangle(x1 + 6, y1 + 6, x2 - 6, y2 - 6, fill=COLORS["leaf_dark"], outline="")
-        else:
-            self.canvas.create_rectangle(x1, y1, x2, y2, fill=COLORS[block], outline=COLORS["outline"], width=1)
+        top_fill = {
+            "grass": COLORS["grass_top"],
+            "dirt": COLORS["dirt_top"],
+            "stone": COLORS["stone_top"],
+            "wood": COLORS["wood_top"],
+            "leaf": COLORS["leaf_top"],
+        }.get(block, COLORS[block])
+        side_fill = {
+            "grass": COLORS["grass_side"],
+            "dirt": COLORS["dirt_side"],
+            "stone": COLORS["stone_side"],
+            "wood": COLORS["wood_side"],
+            "leaf": COLORS["leaf_side"],
+        }.get(block, COLORS[block])
+
+        self.canvas.create_polygon(
+            x1, y1,
+            x2, y1,
+            x2 + depth, y1 - depth,
+            x1 + depth, y1 - depth,
+            fill=top_fill,
+            outline=COLORS["outline"],
+            width=1,
+        )
+
+        self.canvas.create_polygon(
+            x2, y1,
+            x2 + depth, y1 - depth,
+            x2 + depth, y2 - depth,
+            x2, y2,
+            fill=side_fill,
+            outline=COLORS["outline"],
+            width=1,
+        )
+
+        self.canvas.create_rectangle(x1, y1, x2, y2, fill=COLORS[block], outline=COLORS["outline"], width=1)
 
     def draw(self):
         self.canvas.delete("all")
